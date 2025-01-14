@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facebook SDK Demo</title>
+  <script async defer src="https://connect.facebook.net/en_US/sdk.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    #login-btn, #logout-btn {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #user-info {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Facebook SDK Demo</h1>
+  <button id="login-btn">Login with Facebook</button>
+  <button id="logout-btn" style="display:none;">Logout</button>
+  <div id="user-info"></div>
+
+  <script>
+    // Initialize the Facebook SDK
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '3637624833048519', // Replace with your Facebook App ID
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v21.0'
+      });
+
+      FB.AppEvents.logPageView();
+
+      // Check login status
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+    };
+
+    function statusChangeCallback(response) {
+      if (response.status === 'connected') {
+        fetchUserInfo();
+      } else {
+        document.getElementById('login-btn').style.display = 'inline-block';
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('user-info').innerHTML = '';
+      }
+    }
+
+    // Fetch user information
+    function fetchUserInfo() {
+      FB.api('/me', { fields: 'id,name,email,picture' }, function(response) {
+        document.getElementById('user-info').innerHTML = `
+          <p><strong>Name:</strong> ${response.name}</p>
+          <p><strong>Email:</strong> ${response.email}</p>
+          <img src="${response.picture.data.url}" alt="Profile Picture" />
+        `;
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-block';
+      });
+    }
+
+    // Login with Facebook
+    document.getElementById('login-btn').onclick = function() {
+      FB.login(function(response) {
+        if (response.authResponse) {
+          fetchUserInfo();
+        } else {
+          alert('User cancelled login or did not fully authorize.');
+        }
+      }, { scope: 'public_profile,email' });
+    };
+
+    // Logout from Facebook
+    document.getElementById('logout-btn').onclick = function() {
+      FB.logout(function(response) {
+        document.getElementById('user-info').innerHTML = '';
+        document.getElementById('login-btn').style.display = 'inline-block';
+        document.getElementById('logout-btn').style.display = 'none';
+      });
+    };
+  </script>
+</body>
+</html>
